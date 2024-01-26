@@ -51,3 +51,9 @@ CREATE INDEX idx_cards_card_number ON cards (card_number);
 DROP TABLE raw;
 
 VACUUM;
+
+ALTER TABLE contacts ADD info_reversed TEXT;
+
+CREATE INDEX idx_contacts_client_info ON contacts (info);
+
+CREATE INDEX idx_contacts_client_info_rev ON contacts (info_reversed);
