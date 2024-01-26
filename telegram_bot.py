@@ -26,7 +26,10 @@ args = parser.parse_args()
 db = sqlite3.connect(args.db)
 cur = db.cursor()
 
-HELP_TEXT = '''<b>ФОРМАТ ПОИСКА:</b>
+NEWLINE = '\n'
+MIN_PHONE_DIGITS = 7
+MAX_ROWS = 100
+HELP_TEXT = f'''<b>ФОРМАТ ПОИСКА:</b>
 
 <b>ФИО и дата рождения</b>
 /search Фамилия Имя Отчество / YYYY-MM-DD
@@ -38,13 +41,12 @@ HELP_TEXT = '''<b>ФОРМАТ ПОИСКА:</b>
 
 <b>Телефон</b>
 /phone номер
-Эта команда воспринимает суффикс (окончание) телефонного номера и требует не менее 7 цифр.
+Эта команда воспринимает суффикс (окончание) телефонного номера и требует не менее {MIN_PHONE_DIGITS} цифр.
 
-Все команды ищут по префиксам (кроме /phone), но возвращают не более 100 совпадений.
+Все команды ищут по префиксам (кроме /phone), но возвращают не более {MAX_ROWS} совпадений.
 '''
 MSG_RESPONSE = 'Вообще-то я игнорирую сообщения и отвечаю только на знакомые команды. Попробуйте /help.'
 SYNTAX_ERROR_MESSAGE = 'Вероятно, какая-то ошибка. Проверьте, что формат поиска верный.'
-NEWLINE = '\n'
 
 
 class CommandSyntaxException(Exception):
@@ -52,12 +54,12 @@ class CommandSyntaxException(Exception):
 
 
 def db_get_clients_by_name(name: str) -> List[Tuple[int, str, str]]:
-    sql = '''
+    sql = f'''
 SELECT client_number, name, birthdate
 FROM clients
 WHERE name GLOB ?
 ORDER BY name, birthdate
-LIMIT 100
+LIMIT {MAX_ROWS}
 '''
     params = (name.upper() + '*',)
     logger.debug(f'SQL: {sql}, parameters: {params}')
@@ -66,13 +68,13 @@ LIMIT 100
 
 
 def db_get_clients_by_name_and_dob(name: str, dob: str) -> List[Tuple[int, str, str]]:
-    sql = """
+    sql = f'''
 SELECT client_number, name, birthdate
 FROM clients
 WHERE name GLOB ? AND birthdate GLOB ?
 ORDER BY name, birthdate
-LIMIT 100
-"""
+LIMIT {MAX_ROWS}
+'''
     params = (name.upper() + '*', dob + '*')
     logger.debug(f"SQL: {sql.replace(NEWLINE, ' ')}, parameters: {params}")
     result = cur.execute(sql, params)
@@ -81,13 +83,13 @@ LIMIT 100
 
 def db_get_clients_by_phone_suffix(phone_suffix: str) -> List[Tuple[int, str, str]]:
     phone_suffix_reversed = phone_suffix[::-1]
-    sql = '''
+    sql = f'''
 SELECT cl.client_number, cl.name, cl.birthdate
 FROM clients cl
 JOIN contacts co ON cl.client_number = co.client_number
 WHERE co.info_reversed GLOB ?
 ORDER BY cl.name
-LIMIT 100
+LIMIT {MAX_ROWS}
 '''
     params = (phone_suffix_reversed + '*',)
     logger.debug(f"SQL: {sql.replace(NEWLINE, ' ')}, parameters: {params}")
@@ -96,13 +98,13 @@ LIMIT 100
 
 
 def db_get_clients_by_contact(info: str) -> List[Tuple[int, str, str]]:
-    sql = '''
+    sql = f'''
 SELECT cl.client_number, cl.name, cl.birthdate
 FROM clients cl
 JOIN contacts co ON cl.client_number = co.client_number
 WHERE co.info GLOB ?
 ORDER BY cl.name
-LIMIT 100
+LIMIT {MAX_ROWS}
 '''
     params = (info + '*',)
     logger.debug(f"SQL: {sql.replace(NEWLINE, ' ')}, parameters: {params}")
