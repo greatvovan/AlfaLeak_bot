@@ -190,7 +190,7 @@ def parse_search_command(text: str) -> Tuple[str, Optional[str]]:
 
 def parse_phone_command(text: str) -> Optional[str]:
     phone = get_command_value(text)
-    if re.fullmatch(r'\d{7,}', phone):
+    if re.fullmatch(f'\\d{{{MIN_PHONE_DIGITS},}}', phone):
         return phone
     else:
         raise CommandSyntaxException
