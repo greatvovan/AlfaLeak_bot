@@ -13,7 +13,7 @@ from telegram.ext import (ApplicationBuilder, CommandHandler, ContextTypes, Mess
 from telegram.constants import ParseMode
 
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(module)s %(name)s %(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(module)s %(name)s %(levelname)s: %(message)s')
 logging.getLogger("httpx").setLevel(logging.WARNING)
 for loggr in ['asyncio', 'httpcore.http11', 'telegram.ext.ExtBot', 'telegram.ext.Updater', 'httpcore.connection']:
     logging.getLogger(loggr).setLevel(logging.INFO)
@@ -289,6 +289,13 @@ def log_activity(update: Update):
         logger.info(update)
 
 
+def truncate_message(text: str) -> str:
+    """Telegram has a limit of 4096 characters per message."""
+    if len(text) > 4096:
+        text = text[:4093] + '...'
+    return text
+
+
 async def on_help_command(update: Update, _context: ContextTypes.DEFAULT_TYPE) -> None:
     log_activity(update)
     chat = update.effective_chat
@@ -303,7 +310,8 @@ async def on_search_command(update: Update, _context: ContextTypes.DEFAULT_TYPE)
     try:
         search_name, search_dob = parse_search_command(message.text)
         reply_text = search_by_name_and_dob(search_name, search_dob)
-        await chat.send_message(reply_text, ParseMode.HTML)
+        logger.debug(f'Message length: {len(reply_text)}')
+        await chat.send_message(truncate_message(reply_text), ParseMode.HTML)
     except CommandSyntaxException:
         await chat.send_message(SYNTAX_ERROR_MESSAGE)
     except Exception:
@@ -319,7 +327,8 @@ async def on_phone_command(update: Update, _context: ContextTypes.DEFAULT_TYPE) 
     try:
         search_phone = parse_phone_command(message.text)
         reply_text = search_by_phone(search_phone)
-        await chat.send_message(reply_text, ParseMode.HTML)
+        logger.debug(f'Message length: {len(reply_text)}')
+        await chat.send_message(truncate_message(reply_text), ParseMode.HTML)
     except CommandSyntaxException:
         await chat.send_message(SYNTAX_ERROR_MESSAGE)
     except Exception:
@@ -335,7 +344,8 @@ async def on_contact_command(update: Update, _context: ContextTypes.DEFAULT_TYPE
     try:
         info = parse_contact_command(message.text)
         reply_text = search_by_contact(info)
-        await chat.send_message(reply_text, ParseMode.HTML)
+        logger.debug(f'Message length: {len(reply_text)}')
+        await chat.send_message(truncate_message(reply_text), ParseMode.HTML)
     except CommandSyntaxException:
         await chat.send_message(SYNTAX_ERROR_MESSAGE)
     except Exception:
