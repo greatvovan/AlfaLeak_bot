@@ -62,7 +62,7 @@ ORDER BY name, birthdate
 LIMIT {MAX_ROWS}
 '''
     params = (name.upper() + '*',)
-    logger.debug(f'SQL: {sql}, parameters: {params}')
+    logger.debug(f"SQL: {sql.replace(NEWLINE, ' ')}, parameters: {params}")
     result = cur.execute(sql, params)
     return list(result)
 
@@ -84,12 +84,16 @@ LIMIT {MAX_ROWS}
 def db_get_clients_by_phone_suffix(phone_suffix: str) -> List[Tuple[int, str, str]]:
     phone_suffix_reversed = phone_suffix[::-1]
     sql = f'''
+WITH co AS (
+    SELECT client_number
+    FROM contacts
+    WHERE info_reversed GLOB ?
+    LIMIT {MAX_ROWS}
+)
 SELECT cl.client_number, cl.name, cl.birthdate
 FROM clients cl
-JOIN contacts co ON cl.client_number = co.client_number
-WHERE co.info_reversed GLOB ?
+JOIN co ON cl.client_number = co.client_number
 ORDER BY cl.name
-LIMIT {MAX_ROWS}
 '''
     params = (phone_suffix_reversed + '*',)
     logger.debug(f"SQL: {sql.replace(NEWLINE, ' ')}, parameters: {params}")
@@ -99,12 +103,16 @@ LIMIT {MAX_ROWS}
 
 def db_get_clients_by_contact(info: str) -> List[Tuple[int, str, str]]:
     sql = f'''
+WITH co AS (
+    SELECT client_number
+    FROM contacts
+    WHERE info GLOB ?
+    LIMIT {MAX_ROWS}
+)
 SELECT cl.client_number, cl.name, cl.birthdate
 FROM clients cl
-JOIN contacts co ON cl.client_number = co.client_number
-WHERE co.info GLOB ?
+JOIN co ON cl.client_number = co.client_number
 ORDER BY cl.name
-LIMIT {MAX_ROWS}
 '''
     params = (info + '*',)
     logger.debug(f"SQL: {sql.replace(NEWLINE, ' ')}, parameters: {params}")
