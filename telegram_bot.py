@@ -155,7 +155,7 @@ def extract_status_change(chat_member_update: ChatMemberUpdated) -> Optional[Tup
 def get_command_value(text: str) -> str:
     """
     Extract string after command.
-    E.g. '/command Expecto Patronum!' -> Expecto Patronum!
+    E.g. '/command Expecto Patronum!' -> 'Expecto Patronum!'
     """
     first_cut = text.find(' ')
     if first_cut == -1:
