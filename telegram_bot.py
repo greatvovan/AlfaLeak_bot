@@ -284,10 +284,7 @@ def log_activity(update: Update):
 async def on_help_command(update: Update, _context: ContextTypes.DEFAULT_TYPE) -> None:
     log_activity(update)
     chat = update.effective_chat
-    if chat.type == Chat.PRIVATE:
-        await update.effective_user.send_message(HELP_TEXT, ParseMode.HTML)
-    elif chat.type == Chat.GROUP:
-        await chat.send_message(HELP_TEXT, ParseMode.HTML)
+    await chat.send_message(HELP_TEXT, ParseMode.HTML)
 
 
 async def on_search_command(update: Update, _context: ContextTypes.DEFAULT_TYPE) -> None:
