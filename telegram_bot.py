@@ -12,8 +12,12 @@ from telegram.ext import (ApplicationBuilder, CommandHandler, ContextTypes, Mess
                           filters, ChatMemberHandler)
 from telegram.constants import ParseMode
 
+LOG_FORMAT = '%(asctime)s %(module)s %(name)s %(levelname)s: %(message)s'
+NEWLINE = '\n'
+MIN_PHONE_DIGITS = 7
+MAX_ROWS = 100
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(module)s %(name)s %(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, stream=sys.stdout)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 for loggr in ['asyncio', 'httpcore.http11', 'telegram.ext.ExtBot', 'telegram.ext.Updater', 'httpcore.connection']:
     logging.getLogger(loggr).setLevel(logging.INFO)
@@ -26,9 +30,6 @@ args = parser.parse_args()
 db = sqlite3.connect(args.db)
 cur = db.cursor()
 
-NEWLINE = '\n'
-MIN_PHONE_DIGITS = 7
-MAX_ROWS = 100
 HELP_TEXT = f'''<b>ФОРМАТ ПОИСКА:</b>
 
 <b>ФИО и дата рождения</b>
@@ -43,7 +44,7 @@ HELP_TEXT = f'''<b>ФОРМАТ ПОИСКА:</b>
 /phone номер
 Эта команда воспринимает суффикс (окончание) телефонного номера и требует не менее {MIN_PHONE_DIGITS} цифр.
 
-Все команды ищут по префиксам (кроме /phone), но возвращают не более {MAX_ROWS} совпадений.
+Все команды ищут по префиксам (кроме /phone), но возвращают не более {MAX_ROWS} совпадений. Результат поиска возвращается в виде карточек при трёх или менее совпадениях и в виде списка, если совпадений больше трёх.
 '''
 MSG_RESPONSE = 'Вообще-то я игнорирую сообщения и отвечаю только на знакомые команды. Попробуйте /help.'
 SYNTAX_ERROR_MESSAGE = 'Вероятно, какая-то ошибка. Проверьте, что формат поиска верный.'
@@ -273,7 +274,7 @@ def search_by_contact(info: str):
 
 
 def log_activity(update: Update):
-    message = update.message
+    message = update.effective_message
     chat = update.effective_chat
 
     if message and chat:
@@ -304,7 +305,7 @@ async def on_help_command(update: Update, _context: ContextTypes.DEFAULT_TYPE) -
 
 async def on_search_command(update: Update, _context: ContextTypes.DEFAULT_TYPE) -> None:
     log_activity(update)
-    message = update.message
+    message = update.effective_message
     chat = update.effective_chat
 
     try:
@@ -321,7 +322,7 @@ async def on_search_command(update: Update, _context: ContextTypes.DEFAULT_TYPE)
 
 async def on_phone_command(update: Update, _context: ContextTypes.DEFAULT_TYPE) -> None:
     log_activity(update)
-    message = update.message
+    message = update.effective_message
     chat = update.effective_chat
 
     try:
@@ -338,7 +339,7 @@ async def on_phone_command(update: Update, _context: ContextTypes.DEFAULT_TYPE) 
 
 async def on_contact_command(update: Update, _context: ContextTypes.DEFAULT_TYPE) -> None:
     log_activity(update)
-    message = update.message
+    message = update.effective_message
     chat = update.effective_chat
 
     try:
