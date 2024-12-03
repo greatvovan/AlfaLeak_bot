@@ -314,6 +314,7 @@ async def on_search_command(update: Update, _context: ContextTypes.DEFAULT_TYPE)
         logger.debug(f'Message length: {len(reply_text)}')
         await chat.send_message(truncate_message(reply_text), ParseMode.HTML)
     except CommandSyntaxException:
+        logger.info('Syntax error caused by user input')
         await chat.send_message(SYNTAX_ERROR_MESSAGE)
     except Exception:
         etype, e, tb = sys.exc_info()
@@ -331,6 +332,7 @@ async def on_phone_command(update: Update, _context: ContextTypes.DEFAULT_TYPE) 
         logger.debug(f'Message length: {len(reply_text)}')
         await chat.send_message(truncate_message(reply_text), ParseMode.HTML)
     except CommandSyntaxException:
+        logger.info('Syntax error caused by user input')
         await chat.send_message(SYNTAX_ERROR_MESSAGE)
     except Exception:
         etype, e, tb = sys.exc_info()
@@ -348,6 +350,7 @@ async def on_contact_command(update: Update, _context: ContextTypes.DEFAULT_TYPE
         logger.debug(f'Message length: {len(reply_text)}')
         await chat.send_message(truncate_message(reply_text), ParseMode.HTML)
     except CommandSyntaxException:
+        logger.info('Syntax error caused by user input')
         await chat.send_message(SYNTAX_ERROR_MESSAGE)
     except Exception:
         etype, e, tb = sys.exc_info()
